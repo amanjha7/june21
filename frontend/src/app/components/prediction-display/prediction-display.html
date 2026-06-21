@@ -1,0 +1,16 @@
+<div class="result-container" *ngIf="prediction; else noResult">
+    <h2>Prediction for {{ prediction.name }}</h2>
+    <div class="zodiac-box">
+        <h3>Zodiac Sign: {{ prediction.zodiac }}</h3>
+    </div>
+    <div class="prediction-box">
+        <p>{{ prediction.prediction }}</p>
+    </div>
+    <button routerLink="/birth-form">Get Another Prediction</button>
+</div>
+<ng-template #noResult>
+    <div class="no-result">
+        <p>No prediction found. Please enter your birth details.</p>
+        <button routerLink="/birth-form">Go to Form</button>
+    </div>
+</ng-template>
