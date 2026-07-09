@@ -1,19 +1,23 @@
-const { processSubscription, processWebhook, processUnsubscription, processWebhookSample, sendMail } = require('../services/appservice');
+const { processSubscription, processWebhook, processUnsubscription, processWebhookSample, createPost } = require('../services/appservice');
 const {logger} = require('../config/logger');
 
-const handleSendMail = async (req, res) => {
-  logger.info('Entering handleSendMail(). Request Body : ', req.body);
+const handleCreatePost = async (req, res) => {
+  logger.info('Entering handleCreatePost(). Request Body : ', req.body);
   try {
+    const text = req.body.text || req.body.content;
+    if (!text) {
+      return res.status(400).json({ message: 'Post content (text or content) is required.' });
+    }
     const data = {
-      ...req.body,
+      text: text,
       context: req.session.context
     };
-    const result = await sendMail(data);
-    logger.info('Leaving handleSendMail().');
+    const result = await createPost(data);
+    logger.info('Leaving handleCreatePost().');
     res.status(200).json(result);
   } catch (err) {
-    logger.error('Error encountered in handleSendMail(). Error is : ', err);
-    res.status(500).json({ message: 'Failed to send mail.' });
+    logger.error('Error encountered in handleCreatePost(). Error is : ', err);
+    res.status(500).json({ message: 'Failed to create post on Twitter.' });
   }
 };
 
@@ -84,5 +88,5 @@ module.exports = {
   handleUnsubscription,
   sendWebhookSample,
   receiveWebhook,
-  handleSendMail
+  handleCreatePost
 }

@@ -4,7 +4,7 @@ const {
   handleUnsubscription,
   sendWebhookSample,
   receiveWebhook,
-  handleSendMail
+  handleCreatePost
 } = require('../controllers/appcontroller');
 const { authenticationMiddleware } = require('../middlewares/authentication');
 const router = express.Router();
@@ -21,6 +21,8 @@ router.post("/webhook/sample", sendWebhookSample);
 // Webhook - for configuration in the app
 router.post("/common/webhook", receiveWebhook);
 
-router.post("/send-mail", authenticationMiddleware, handleSendMail);
+// Endpoints for posting content to Twitter
+router.post("/post", authenticationMiddleware, handleCreatePost);
+router.post("/create-post", authenticationMiddleware, handleCreatePost);
 
 module.exports = { router };
