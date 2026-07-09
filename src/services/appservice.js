@@ -9,26 +9,31 @@ const { getSavedConnection, deleteConnection } = require('../dbhelper/connection
 const { updateWebhookDetails, getSavedWebhookDetails, deleteWebhookDetails } = require('../dbhelper/webhookdetailsdao');
 const { fetchAccessToken, generateCryptoSignature } = require('../utils/apputils');
 const {logger} = require('../config/logger');
-const { createZohoClient } = require('../utils/zohoClient');
 
-const sendMail = async (data) => {
-  logger.info('Entering sendMail(). Data : ', data);
+const createPost = async (data) => {
+  logger.info('Entering createPost(). Data : ', data);
   const context = data.context;
-  const zohoClient = createZohoClient(context);
+  const appInstanceId = context.app_instance_id;
 
-  // First, get the accountId
-  const accountsResponse = await zohoClient.get('/accounts');
-  const accountId = accountsResponse.data.data[0].accountId;
+  const { getValidAccessToken } = require('./oauthservice');
+  const accessToken = await getValidAccessToken(appInstanceId);
 
-  const mailData = {
-    fromAddress: data.fromAddress,
-    toAddress: data.toAddress,
-    subject: data.subject,
-    content: data.content
+  const postData = {
+    text: data.text
   };
 
-  const response = await zohoClient.post(`/accounts/${accountId}/messages`, mailData);
-  logger.info('Leaving sendMail(). Response status: ', response.status);
+  const config = {
+    method: 'POST',
+    url: 'https://api.twitter.com/2/tweets',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    data: postData
+  };
+
+  const response = await axios.request(config);
+  logger.info('Leaving createPost(). Response status: ', response.status);
   return response.data;
 };
 
@@ -210,74 +215,10 @@ function determineTriggerType(event, payload) {
   return triggerType;
 }
 
-
-//####  SAMPLE GET and POST calls  ####
-/* const getPullRequestList = async (data) => {
-  let accessToken = await fetchAccessToken(data);
-  let fixed_fields = data?.field_details?.fixed_fields;
-  let owner = fixed_fields.repo_owner?.field_value;
-  let repo = fixed_fields.repo_name?.field_value;
-
-  const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/pulls`, {
-    headers: createGitHubApiHeader(accessToken)
-  });
-
-  return response.data.map(obj => ({
-    label: obj.title,
-    value: obj.number
-  }));
-};
-
-
-const createPullRequestComment = async (data) => {
-  let fixed_fields = data?.field_details?.fixed_fields;
-  let accessToken = await fetchAccessToken(data);
-  let owner = fixed_fields.repo_owner?.field_value;
-  let repo = fixed_fields.repo_name?.field_value;
-  let pullNumber = fixed_fields.pull_number?.field_value;
-
-  await axios.post(`https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/comments`, {
-    body: 'Great stuff!',
-    commit_id: '6dcb09b5b57875f334f61aebed695e2e4193db5e',
-    path: 'file1.txt',
-    start_line: 1,
-    start_side: 'RIGHT',
-    line: 2,
-    side: 'RIGHT'
-  }, {
-    headers: createGitHubApiHeader(accessToken)
-  });
-};
-
-const updatePullRequest = async (data) => {
-  let fixed_fields = data?.field_details?.fixed_fields;
-  let accessToken = await fetchAccessToken(data);
-  let owner = fixed_fields.repo_owner?.field_value;
-  let repo = fixed_fields.repo_name?.field_value;
-  let pullNumber = fixed_fields.pull_number?.field_value;
-  let title = fixed_fields.title?.field_value;
-  let body = fixed_fields.body?.field_value;
-  let state = fixed_fields.state?.field_value;
-
-  let details = await getPullRequestDetails(owner, repo, pullNumber, accessToken);
-  let base = details ? details.base.ref : 'master';
-
-  await axios.patch(`https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}`, {
-    title: title,
-    body: body,
-    state: state,
-    base: base
-  }, {
-    headers: createGitHubApiHeader(accessToken)
-  });
-};
-*/
-
-
 module.exports = {
   processSubscription,
   processUnsubscription,
   processWebhookSample,
   processWebhook,
-  sendMail
+  createPost
 }

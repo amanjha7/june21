@@ -1,14 +1,14 @@
 //we receive the trigger name in the "type" url param in the subscribe endpoint, so that we know which trigger has been subscribed from pronnel.
 const TRIGGER_NAME = { BRANCH_CREATED: "branch_created", BRANCH_DELETED: "branch_deleted", COMMIT_CREATED: "commit_created", PULL_REQ_CREATED: "pull_request_created", PULL_REQ_MERGED: "pull_request_merged", PULL_REQ_COMMENTED:"pull_req_commented" };
 
-const BASE_URL = 'https://mail.zoho.com/api';
+const BASE_URL = 'https://api.twitter.com';
 const APP_URLS = {
     BASE_URL: BASE_URL,
-    SYSTEM_INFO: `${BASE_URL}/accounts`,
-    ACCESS_TOKEN: `https://accounts.zoho.com/oauth/v2/token`,
-    AUTHORIZE: `https://accounts.zoho.com/oauth/v2/auth`
+    SYSTEM_INFO: `https://api.twitter.com/2/users/me`,
+    ACCESS_TOKEN: `https://api.twitter.com/2/oauth2/token`,
+    AUTHORIZE: `https://twitter.com/i/oauth2/authorize`
 }
-const SCOPES = 'ZohoMail.accounts.READ,ZohoMail.messages.CREATE';
+const SCOPES = 'tweet.read tweet.write users.read offline.access';
 const APP_HOST_URL=process.env.APP_HOST_URL;
 const REDIRECT_URI = `${APP_HOST_URL}/callback`;
 
